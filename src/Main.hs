@@ -1,8 +1,9 @@
 module Main where
 
-import Block
+import Renderer
 import State
 import Graphics.Gloss
+import Graphics.Gloss.Interface.IO.Display
 
 main :: IO ()
-main = display FullScreen (makeColorI 39 41 44 255) (text (show (Block J [])))
+main = display FullScreen boardColor (render initialState)
