@@ -1,4 +1,4 @@
-module State (numCellsWidth, numCellsHeight, initialState, State(..), Tetrimino(..), Coordinate, Board) where
+module State (numCellsWidth, numCellsHeight, initialState, State(..), Tetrimino(..), Direction(..), Coordinate, Board) where
 
 import Block
 import System.Random
@@ -29,3 +29,9 @@ initialState = State {
     randomSeed = mkStdGen 0,
     board = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight] ]
 }
+
+moveCurrentBlock :: Direction -> State -> State
+moveCurrentBlock dir state = state { currentBlock = translate dir (currentBlock state) } 
+
+rotateCurrentBlock :: Direction -> State -> State
+rotateCurrentBlock dir state = state { currentBlock = rotate dir (currentBlock state) }

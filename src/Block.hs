@@ -1,4 +1,4 @@
-module Block (newBlock, translate, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
+module Block (newBlock, translate, rotate, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
 
 import Prelude hiding (Left, Right)
 
@@ -19,7 +19,7 @@ newBlock J = Block J [(-1, 0), (1, 0), (1, -1)]
 newBlock L = Block L [(-1, 0), (0, -1), (1, 0)]
 
 -- Translate.
-data Direction = Left | Right | Down
+data Direction = Left | Right | Down | Clockwise | CClockwise
 translate :: Direction -> Block -> Block
 translate dir (Block shape coords) = Block shape (map (translateCoordinates dir) coords) where
 
@@ -27,3 +27,6 @@ translate dir (Block shape coords) = Block shape (map (translateCoordinates dir)
     translateCoordinates Left (x, y)  = (x - 1, y)
     translateCoordinates Right (x, y) = (x + 1, y)
     translateCoordinates Down (x, y)  = (x, y - 1)
+
+rotate :: Direction -> Block -> Block
+rotate _ b = b
