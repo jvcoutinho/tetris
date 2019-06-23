@@ -1,6 +1,7 @@
 module Main where
 
 import Block
+import State
 import Graphics.Gloss
 
 main :: IO ()

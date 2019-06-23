@@ -1,13 +1,22 @@
-module Block (translate, Block(..), Tetrimino(..), Coordinate) where
+module Block (newBlock, translate, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
 
 import Prelude hiding (Left, Right)
 
 -- Block shapes.
-data Tetrimino = I | O | T | S | Z | J | L deriving (Show)
+data Tetrimino = I | O | T | S | Z | J | L
 type Coordinate = (Int, Int)
 
 -- A block is composed by its shape and the coordinates it occupies. 
-data Block = Block Tetrimino [Coordinate] deriving (Show)
+data Block = Block Tetrimino [Coordinate]
+
+newBlock :: Tetrimino -> Block
+newBlock I = Block I [(-2, 0), (-1, 0), (1, 0)]
+newBlock O = Block O [(-1, 0), (-1, -1), (0, -1)]
+newBlock T = Block T [(-1, 0), (0, -1), (1, 0)]
+newBlock S = Block S [(-1, -1), (0, -1), (1, 0)]
+newBlock Z = Block Z [(0, -1), (0, -1), (1, -1)]
+newBlock J = Block J [(-1, 0), (1, 0), (1, -1)]
+newBlock L = Block L [(-1, 0), (0, -1), (1, 0)]
 
 -- Translate.
 data Direction = Left | Right | Down
