@@ -9,4 +9,7 @@ handleInput (EventKey (SpecialKey KeyRight) Down _ _) state = S.moveCurrentBlock
 handleInput (EventKey (SpecialKey KeyDown) Down _ _) state  = S.moveCurrentBlock S.Down state
 handleInput (EventKey (Char 'a') Down _ _) state            = S.rotateCurrentBlock S.CClockwise state
 handleInput (EventKey (Char 'd') Down _ _) state            = S.rotateCurrentBlock S.Clockwise state
+handleInput (EventKey (Char 'r') Down _ _) state
+    | S.progress state == S.GameOver                        = (S.initialState (S.randomGenerator state))
+    | otherwise                                             = state    
 handleInput _ state                                         = state 
