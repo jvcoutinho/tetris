@@ -12,33 +12,30 @@ numCellsWidth = 10
 numCellsHeight = 28
 
 data State = State {
-    randomSeed :: StdGen,
-    level :: Int,
-    currentBlock :: Block,
-    nextShape :: Tetrimino,
-    period :: Float,
-    score :: Int,
-    currentTime :: Float,
-    previousTime :: Float,
-    board :: Board
+    randomGenerator :: StdGen,
+    level           :: Int,
+    currentBlock    :: Block,
+    period          :: Float,
+    score           :: Int,
+    currentTime     :: Float,
+    previousTime    :: Float,
+    board           :: Board
 }
 
-initialState :: State
-initialState = State {
-    randomSeed = mkStdGen 0,
-    level = 1,
-    nextShape = L,
-    currentBlock = (newBlock T),
-    period = 1.0,
-    score = 0,
-    currentTime = 0.0,
-    previousTime = 0.0,
-    
-    board = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight] ]
+initialState :: StdGen -> State
+initialState gen = State {
+    randomGenerator = (snd . chooseShape) gen,
+    level           = 1,  -- TODO: end game and more levels
+    currentBlock    = (newBlock . fst . chooseShape) gen, -- TODO: randomize
+    period          = 1.0,
+    score           = 0, -- TODO: display
+    currentTime     = 0.0,
+    previousTime    = 0.0,
+    board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight] ]
 }
 
--- generateNextShape :: StdGen -> Tetrimino
--- generateNextShape gen = fst (randomR (1, 7) gen)
+chooseShape :: StdGen -> (Tetrimino, StdGen)
+chooseShape gen = (\(tetr, g) -> (tetrimino tetr, g)) (randomR (1,7) gen)
 
 moveCurrentBlock :: Direction -> State -> State
 moveCurrentBlock dir state = updateCurrentBlock translate dir state
@@ -57,7 +54,7 @@ update f state = checkIfMove (state {currentTime = f + currentTime state}) where
 updateCurrentBlock :: (Direction -> Block -> Block) -> Direction -> State -> State
 updateCurrentBlock f dir s
     | validMovement (currentBlock s) (f dir (currentBlock s)) (board s) = updateBoard (s {currentBlock = f dir (currentBlock s)}) s
-    | dir == Down                                                       = checkFullLines (s {currentBlock = newBlock (nextShape s)})
+    | dir == Down                                                       = checkFullLines (s {currentBlock = newBlock shape, randomGenerator = gen})
     | otherwise                                                         = s
         where
             validMovement :: Block -> Block -> Board -> Bool
@@ -93,6 +90,8 @@ updateCurrentBlock f dir s
 
                         updateScore :: Int -> Int
                         updateScore count = (score s) + count * count * 10
+
+            (shape, gen) = chooseShape (randomGenerator s) 
 
 updateBoard :: State -> State -> State
 updateBoard newState oldState = newState {board = setBoard True cleantBoard (currentBlock newState)} where

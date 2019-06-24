@@ -37,7 +37,7 @@ translate dir (Block shape position coords) = Block shape (translateCoordinates 
     translateCoordinates Right (x, y) = (x + 1, y)
     translateCoordinates Down (x, y)  = (x, y - 1)
 
-rotate :: Direction -> Block -> Block
+rotate :: Direction -> Block -> Block -- TODO: define
 rotate _ b = b
 
 isCoordinate :: Block -> Coordinate -> Bool
