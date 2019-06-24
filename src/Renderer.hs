@@ -7,10 +7,10 @@ import Graphics.Gloss
 
 -- Dimensions.
 cellSize, boardWidth, boardHeight, padding :: Int
-cellSize = 35
+cellSize = 25
 boardWidth = numCellsWidth * cellSize
 boardHeight = numCellsHeight * cellSize
-padding = (768 - (20 * cellSize)) `quot` 2
+padding = 100
 
 -- Colors.
 boardColor, borderColor :: Color
@@ -28,7 +28,7 @@ cellColor (Just J) = dark blue
 cellColor (Just L) = dark orange
 
 render :: State -> Picture
-render state = pictures[renderBoard (board state)] where
+render state = pictures[renderBoard (board state), renderScore (score state)] where
 
     renderBoard :: Board -> Picture
     renderBoard b = pictures[renderBorder, renderCells b]
@@ -40,8 +40,8 @@ render state = pictures[renderBoard (board state)] where
 
     renderCells :: Board -> Picture
     renderCells b = translate (-tx) (-ty) (pictures (Map.elems (Map.mapWithKey renderCell b))) where
-        tx = fromIntegral (quot boardWidth 4)
-        ty = fromIntegral (quot boardHeight 4)
+        tx = fromIntegral (boardWidth + padding) / 2.5
+        ty = fromIntegral (boardHeight + padding) / 2.2
 
     renderCell :: Coordinate -> Maybe Tetrimino -> Picture
     renderCell (x, y) tetr = translate (fromIntegral sx) (fromIntegral sy) (color (cellColor tetr) (rectangleSolid sz sz)) where
@@ -49,4 +49,7 @@ render state = pictures[renderBoard (board state)] where
         sz = fromIntegral cellSize
         
     transformToScreen :: Coordinate -> Coordinate
-    transformToScreen (px, py) = (px * cellSize `quot` 2, py * cellSize `quot` 2)
+    transformToScreen (px, py) = (px * cellSize, py * cellSize)
+
+    renderScore :: Int -> Picture
+    renderScore score = color white (translate (300) 300 (scale 0.3 0.3 (text ("SCORE: " ++ show score)))) where
