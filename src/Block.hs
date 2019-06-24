@@ -13,12 +13,12 @@ newBlock :: Tetrimino -> Block
 newBlock t = Block t blockOrigin (map (sumCoordinates blockOrigin) (relativeCells t)) where
 
     blockOrigin :: Coordinate
-    blockOrigin = (6, 20)
+    blockOrigin = (6, 28)
 
     relativeCells :: Tetrimino -> [Coordinate]
     relativeCells I = [(-2, 0), (-1, 0), (0, 0), (1, 0)]
     relativeCells O = [(-1, 0), (-1, -1), (0, 0), (0, -1)]
-    relativeCells T = [(-1, 0), (0, -1), (1, 0)]
+    relativeCells T = [(-1, 0), (0, -1), (0, 0), (1, 0)]
     relativeCells S = [(-1, -1), (0, -1), (0, 0), (1, 0)]
     relativeCells Z = [(0, -1), (0, -1), (0, 0), (1, -1)]
     relativeCells J = [(-1, 0), (1, 0), (0, 0), (1, -1)]
@@ -37,8 +37,12 @@ translate dir (Block shape position coords) = Block shape (translateCoordinates 
     translateCoordinates Right (x, y) = (x + 1, y)
     translateCoordinates Down (x, y)  = (x, y - 1)
 
-rotate :: Direction -> Block -> Block -- TODO: define
-rotate _ b = b
+rotate :: Direction -> Block -> Block
+rotate dir (Block shape (px, py) coords) = Block shape (px, py) (map (rotateCoordinates dir) coords) where
+
+    rotateCoordinates :: Direction -> Coordinate -> Coordinate
+    rotateCoordinates Clockwise (x, y)  = (y - py + px, -x + px + py)
+    rotateCoordinates CClockwise (x, y) = (-y + py + px, x - px + py)
 
 isCoordinate :: Block -> Coordinate -> Bool
 isCoordinate (Block _ _ coords) c = elem c coords
