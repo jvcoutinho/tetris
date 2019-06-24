@@ -1,4 +1,4 @@
-module Block (newBlock, translate, rotate, isCoordinate, tetrimino, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
+module Block (newBlock, translate, rotate, isCoordinate, tetrimino, relativeCells, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
 
 import Prelude hiding (Left, Right)
 
@@ -15,17 +15,17 @@ newBlock t = Block t blockOrigin (map (sumCoordinates blockOrigin) (relativeCell
     blockOrigin :: Coordinate
     blockOrigin = (6, 28)
 
-    relativeCells :: Tetrimino -> [Coordinate]
-    relativeCells I = [(-2, 0), (-1, 0), (0, 0), (1, 0)]
-    relativeCells O = [(-1, 0), (-1, -1), (0, 0), (0, -1)]
-    relativeCells T = [(-1, 0), (0, -1), (0, 0), (1, 0)]
-    relativeCells S = [(-1, -1), (0, -1), (0, 0), (1, 0)]
-    relativeCells Z = [(-1, 0), (0, -1), (0, 0), (1, -1)]
-    relativeCells J = [(-1, 0), (1, 0), (0, 0), (1, -1)]
-    relativeCells L = [(-1, 0), (0, 0), (1, 0), (1, 1)]
-
     sumCoordinates :: Coordinate -> Coordinate -> Coordinate
     sumCoordinates (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+
+relativeCells :: Tetrimino -> [Coordinate]
+relativeCells I = [(-2, 0), (-1, 0), (0, 0), (1, 0)]
+relativeCells O = [(-1, 0), (-1, -1), (0, 0), (0, -1)]
+relativeCells T = [(-1, 0), (0, -1), (0, 0), (1, 0)]
+relativeCells S = [(-1, -1), (0, -1), (0, 0), (1, 0)]
+relativeCells Z = [(-1, 0), (0, -1), (0, 0), (1, -1)]
+relativeCells J = [(-1, 0), (1, 0), (0, 0), (1, -1)]
+relativeCells L = [(-1, 0), (0, 0), (1, 0), (1, 1)]
 
 -- Translate.
 data Direction = Left | Right | Down | Clockwise | CClockwise deriving (Eq)

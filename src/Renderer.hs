@@ -28,7 +28,7 @@ cellColor (Just J) = dark blue
 cellColor (Just L) = dark orange
 
 render :: State -> Picture
-render state = pictures[renderBoard (board state), renderScore (score state)] where
+render state = pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state)] where
 
     renderBoard :: Board -> Picture
     renderBoard b = pictures[renderBorder, renderCells b]
@@ -44,12 +44,27 @@ render state = pictures[renderBoard (board state), renderScore (score state)] wh
         ty = fromIntegral (boardHeight + padding) / 2.2
 
     renderCell :: Coordinate -> Maybe Tetrimino -> Picture
-    renderCell (x, y) tetr = translate (fromIntegral sx) (fromIntegral sy) (color (cellColor tetr) (rectangleSolid sz sz)) where
+    renderCell (x, y) tetr = translate sx sy (color (cellColor tetr) (rectangleSolid sz sz)) where
         (sx, sy) = transformToScreen (x, y)
         sz = fromIntegral cellSize
         
-    transformToScreen :: Coordinate -> Coordinate
-    transformToScreen (px, py) = (px * cellSize, py * cellSize)
+    transformToScreen :: Coordinate -> (Float, Float)
+    transformToScreen (px, py) = (fromIntegral (px * cellSize), fromIntegral (py * cellSize))
 
     renderScore :: Int -> Picture
-    renderScore score = color white (translate (300) 300 (scale 0.3 0.3 (text ("SCORE: " ++ show score)))) where
+    renderScore score = color white (translate 300 300 (scale 0.3 0.3 (text ("SCORE: " ++ show score))))
+
+    renderNextShape :: Tetrimino -> Picture
+    renderNextShape shape = translate 300 50 (pictures[nextShapeText, nextShapeFigure (relativeCells shape)]) where
+
+        nextShapeText :: Picture
+        nextShapeText = translate 0 50 (color white (scale 0.2 0.2 (text "NEXT:")))
+
+        nextShapeFigure :: [Coordinate] -> Picture
+        nextShapeFigure coords = pictures (map toPicture coords) where
+            
+            toPicture :: Coordinate -> Picture
+            toPicture (x, y) = color (cellColor (Just shape)) (translate (-sx) sy (rectangleSolid sz sz)) where
+                (sx, sy) = transformToScreen (x, y)
+                sz = fromIntegral cellSize
+

@@ -1,4 +1,4 @@
-module State (numCellsWidth, numCellsHeight, initialState, update, moveCurrentBlock, rotateCurrentBlock, State(..), Tetrimino(..), Direction(..), Coordinate, Board) where
+module State (numCellsWidth, numCellsHeight, initialState, update, moveCurrentBlock, rotateCurrentBlock, relativeCells, State(..), Tetrimino(..), Direction(..), Coordinate, Board) where
 
 import Block
 import System.Random
@@ -15,6 +15,7 @@ data State = State {
     randomGenerator :: StdGen,
     level           :: Int,
     currentBlock    :: Block,
+    nextShape       :: Tetrimino,
     period          :: Float,
     score           :: Int,
     currentTime     :: Float,
@@ -24,15 +25,19 @@ data State = State {
 
 initialState :: StdGen -> State
 initialState gen = State {
-    randomGenerator = (snd . chooseShape) gen,
+    randomGenerator = (randomize . randomize) gen,
     level           = 1,  -- TODO: end game and more levels
-    currentBlock    = (newBlock . fst . chooseShape) gen, -- TODO: randomize
+    currentBlock    = (newBlock . fst . chooseShape) gen,
+    nextShape       = (fst . chooseShape) (randomize gen),
     period          = 1.0,
     score           = 0,
     currentTime     = 0.0,
     previousTime    = 0.0,
     board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight] ]
 }
+
+randomize :: StdGen -> StdGen
+randomize gen = snd (chooseShape gen)
 
 chooseShape :: StdGen -> (Tetrimino, StdGen)
 chooseShape gen = (\(tetr, g) -> (tetrimino tetr, g)) (randomR (1,7) gen)
@@ -53,10 +58,13 @@ update f state = checkIfMove (state {currentTime = f + currentTime state}) where
 
 updateCurrentBlock :: (Direction -> Block -> Block) -> Direction -> State -> State
 updateCurrentBlock f dir s
-    | validMovement (currentBlock s) (f dir (currentBlock s)) (board s) = updateBoard (s {currentBlock = f dir (currentBlock s)}) s
-    | dir == Down                                                       = checkFullLines (s {currentBlock = newBlock shape, randomGenerator = gen})
-    | otherwise                                                         = s
+    | validMovement (currentBlock s) nextBlock (board s) = updateBoard (s {currentBlock = nextBlock}) s
+    | dir == Down                                        = checkFullLines (s {nextShape = shape, currentBlock = newBlock (nextShape s), randomGenerator = gen})
+    | otherwise                                          = s
         where
+            nextBlock :: Block
+            nextBlock = f dir (currentBlock s)
+
             validMovement :: Block -> Block -> Board -> Bool
             validMovement _ (Block _ _ []) _             = True
             validMovement block (Block s p (c:cs)) board = (isCoordinate block c || (Map.lookup c board) == Just Nothing) 
