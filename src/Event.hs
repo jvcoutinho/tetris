@@ -1,11 +1,12 @@
-module Event where
+module Event (handleInput) where
 
-import State
-import qualified Graphics.Gloss.Interface.IO.Interact as I
+import qualified State as S
+import Graphics.Gloss.Interface.IO.Interact 
 
-handleInput :: Event -> State -> State
-handleInput (EventKey (SpecialKey KeyLeft) I.Down _ _) state  = moveCurrentBlock Left state 
-handleInput (EventKey (SpecialKey KeyRight) I.Down _ _) state = moveCurrentBlock Right state 
-handleInput (EventKey (SpecialKey KeyDown) I.Down _ _) state  = moveCurrentBlock State.Down state
-handleInput (EventKey (Char 'a') I.Down _ _) state            = rotateCurrentBlock CClockwise state
-handleInput (EventKey (Char 'd') I.Down _ _) state            = rotateCurrentBlock Clockwise state 
+handleInput :: Event -> S.State -> S.State
+handleInput (EventKey (SpecialKey KeyLeft) Down _ _) state  = S.moveCurrentBlock S.Left state 
+handleInput (EventKey (SpecialKey KeyRight) Down _ _) state = S.moveCurrentBlock S.Right state 
+handleInput (EventKey (SpecialKey KeyDown) Down _ _) state  = S.moveCurrentBlock S.Down state
+handleInput (EventKey (Char 'a') Down _ _) state            = S.rotateCurrentBlock S.CClockwise state
+handleInput (EventKey (Char 'd') Down _ _) state            = S.rotateCurrentBlock S.Clockwise state
+handleInput _ state                                         = state 
