@@ -20,7 +20,7 @@ newBlock t = Block t blockOrigin (map (sumCoordinates blockOrigin) (relativeCell
     relativeCells O = [(-1, 0), (-1, -1), (0, 0), (0, -1)]
     relativeCells T = [(-1, 0), (0, -1), (0, 0), (1, 0)]
     relativeCells S = [(-1, -1), (0, -1), (0, 0), (1, 0)]
-    relativeCells Z = [(0, -1), (0, -1), (0, 0), (1, -1)]
+    relativeCells Z = [(-1, 0), (0, -1), (0, 0), (1, -1)]
     relativeCells J = [(-1, 0), (1, 0), (0, 0), (1, -1)]
     relativeCells L = [(-1, 0), (0, 0), (1, 0), (1, 1)]
 
