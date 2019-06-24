@@ -13,7 +13,7 @@ newBlock :: Tetrimino -> Block
 newBlock t = Block t blockOrigin (map (sumCoordinates blockOrigin) (relativeCells t)) where
 
     blockOrigin :: Coordinate
-    blockOrigin = (6, 28)
+    blockOrigin = (6, 30)
 
     sumCoordinates :: Coordinate -> Coordinate -> Coordinate
     sumCoordinates (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)

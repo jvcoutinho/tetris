@@ -28,10 +28,13 @@ cellColor (Just J) = dark blue
 cellColor (Just L) = dark orange
 
 render :: State -> Picture
-render state = pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state)] where
+render state = pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state), renderProgress (progress state)] where
 
     renderBoard :: Board -> Picture
-    renderBoard b = pictures[renderBorder, renderCells b]
+    renderBoard b = pictures[renderBorder, renderCells visibleBoard] where
+
+        visibleBoard :: Board
+        visibleBoard = Map.filterWithKey (\(x, y) _ -> y <= numCellsHeight) b
     
     renderBorder :: Picture
     renderBorder = color borderColor (rectangleSolid tx ty) where
@@ -39,7 +42,7 @@ render state = pictures[renderBoard (board state), renderScore (score state), re
         ty = fromIntegral (boardHeight + padding)
 
     renderCells :: Board -> Picture
-    renderCells b = translate (-tx) (-ty) (pictures (Map.elems (Map.mapWithKey renderCell b))) where
+    renderCells b = (translate (-tx) (-ty)) (pictures (Map.elems (Map.mapWithKey renderCell b))) where
         tx = fromIntegral (boardWidth + padding) / 2.5
         ty = fromIntegral (boardHeight + padding) / 2.2
 
@@ -68,3 +71,6 @@ render state = pictures[renderBoard (board state), renderScore (score state), re
                 (sx, sy) = transformToScreen (x, y)
                 sz = fromIntegral cellSize
 
+    renderProgress :: Progress -> Picture
+    renderProgress Running  = text ""
+    renderProgress GameOver = color white (translate 200 (-200) (scale 0.5 0.5 (text "GAME OVER!")))

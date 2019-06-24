@@ -1,4 +1,4 @@
-module State (numCellsWidth, numCellsHeight, initialState, update, moveCurrentBlock, rotateCurrentBlock, relativeCells, State(..), Tetrimino(..), Direction(..), Coordinate, Board) where
+module State (numCellsWidth, numCellsHeight, initialState, update, moveCurrentBlock, rotateCurrentBlock, relativeCells, State(..), Tetrimino(..), Direction(..), Coordinate, Board, Progress(..)) where
 
 import Block
 import System.Random
@@ -6,6 +6,8 @@ import qualified Data.Map.Strict as Map
 
 -- The board is a map of coordinates to tetriminos. If there's none, it's an empty cell.
 type Board = Map.Map Coordinate (Maybe Tetrimino)
+
+data Progress = Running | GameOver | Paused deriving (Eq)
 
 numCellsWidth, numCellsHeight :: Int
 numCellsWidth = 10
@@ -20,7 +22,8 @@ data State = State {
     score           :: Int,
     currentTime     :: Float,
     previousTime    :: Float,
-    board           :: Board
+    board           :: Board,
+    progress        :: Progress
 }
 
 initialState :: StdGen -> State
@@ -33,7 +36,8 @@ initialState gen = State {
     score           = 0,
     currentTime     = 0.0,
     previousTime    = 0.0,
-    board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight] ]
+    board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight+2] ],
+    progress        = Running
 }
 
 randomize :: StdGen -> StdGen
@@ -50,7 +54,7 @@ rotateCurrentBlock dir state = updateCurrentBlock rotate dir state
 
 update :: Float -> State -> State
 update f state = checkIfMove (state {currentTime = f + currentTime state}) where
-
+       
     checkIfMove :: State -> State
     checkIfMove s 
         | (currentTime s) - (previousTime s) >= (period s) = updateCurrentBlock translate Down (s {previousTime = currentTime s})
@@ -58,8 +62,11 @@ update f state = checkIfMove (state {currentTime = f + currentTime state}) where
 
 updateCurrentBlock :: (Direction -> Block -> Block) -> Direction -> State -> State
 updateCurrentBlock f dir s
+    | progress s == GameOver                             = s
     | validMovement (currentBlock s) nextBlock (board s) = updateBoard (s {currentBlock = nextBlock}) s
-    | dir == Down                                        = checkFullLines (s {nextShape = shape, currentBlock = newBlock (nextShape s), randomGenerator = gen})
+    | dir == Down                                        = if passedLimits (currentBlock s) (board s) 
+                                                            then s {progress = GameOver}
+                                                            else checkFullLines (s {nextShape = shape, currentBlock = newBlock (nextShape s), randomGenerator = gen})
     | otherwise                                          = s
         where
             nextBlock :: Block
@@ -69,6 +76,10 @@ updateCurrentBlock f dir s
             validMovement _ (Block _ _ []) _             = True
             validMovement block (Block s p (c:cs)) board = (isCoordinate block c || (Map.lookup c board) == Just Nothing) 
                                                                 && validMovement block (Block s p cs) board
+
+            passedLimits :: Block -> Board -> Bool
+            passedLimits (Block _ _ []) _             = False
+            passedLimits (Block s p ((x,y):cs)) board = y > numCellsHeight || passedLimits (Block s p cs) board
 
             checkFullLines :: State -> State
             checkFullLines s = (\(b, c) -> s {board = b, score = updateScore c}) cleantFullLines
