@@ -28,7 +28,7 @@ cellColor (Just J) = dark blue
 cellColor (Just L) = dark orange
 
 render :: State -> IO Picture
-render state = return (pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state), renderProgress (progress state)]) where
+render state = return (pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state), renderProgress (progress state), renderLevel (level state)]) where
 
     renderBoard :: Board -> Picture
     renderBoard b = pictures[renderBorder, renderCells visibleBoard] where
@@ -74,3 +74,6 @@ render state = return (pictures[renderBoard (board state), renderScore (score st
     renderProgress :: Progress -> Picture
     renderProgress Running  = text ""
     renderProgress GameOver = color white (translate 200 (-200) (scale 0.5 0.5 (text "GAME OVER!")))
+
+    renderLevel :: Int -> Picture
+    renderLevel level = color white (translate 200 (-300) (scale 0.2 0.2 (text ("LEVEL: " ++ show level))))

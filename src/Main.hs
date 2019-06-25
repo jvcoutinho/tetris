@@ -8,6 +8,8 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 
+import Control.Concurrent.STM
+
 main :: IO ()
 main = do
     numberGenerator <- newStdGen

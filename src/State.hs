@@ -4,6 +4,7 @@ import Block
 import System.Random
 import qualified Data.Map.Strict as Map
 
+import Control.Concurrent
 import Control.Concurrent.STM
 
 -- The board is a map of coordinates to tetriminos. If there's none, it's an empty cell.
@@ -16,7 +17,7 @@ numCellsWidth = 10
 numCellsHeight = 28
 
 nextLevelTime :: Float
-nextLevelTime = 40.0
+nextLevelTime = 5.0
 
 data State = State {
     randomGenerator :: StdGen,
@@ -29,7 +30,8 @@ data State = State {
     previousTime    :: Float,
     board           :: Board,
     progress        :: Progress,
-    lvl5NextShape   :: STM (TVar Tetrimino)
+
+    lvl7NextShape   :: IO (MVar Tetrimino)
 }
 
 initialState :: StdGen -> State
@@ -45,8 +47,15 @@ initialState gen = State {
     board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight+2] ],
     progress        = Running,
 
-    lvl5NextShape   = newTVar ((fst . chooseShape) (randomize gen))
+    lvl7NextShape   = newEmptyMVar
 }
+
+lvl7State :: MVar Tetrimino -> IO()
+lvl7State nextShape = do
+    number <- getStdRandom (randomR (1,7))
+    putMVar nextShape (tetrimino number)
+    threadDelay 2000000
+    lvl7State nextShape
 
 randomize :: StdGen -> StdGen
 randomize gen = snd (chooseShape gen)
@@ -65,18 +74,28 @@ update f state = progression (state {currentTime = f + currentTime state}) where
        
     progression :: State -> IO State
     progression s
-        | levelPass    = if level nextLevel == 5 then return nextLevel else return nextLevel
-        | periodPass   = return (updateCurrentBlock translate Down (s {previousTime = currentTime s}))
-        | otherwise    = return s
+        | levelPass = if level nextLevel == 7
+                        then do mVar <- lvl7NextShape s
+                                forkIO (lvl7State mVar)
+                                return nextLevel
+                        else return nextLevel
+        | periodPass                        = do mVar <- lvl7NextShape s
+                                                 possiblyNextShape <- tryTakeMVar mVar
+                                                 return (updateCurrentBlock translate Down (state {previousTime = currentTime s, nextShape = checkNextShape possiblyNextShape, lvl7NextShape = return mVar }))
+        | otherwise                         = return s
         where
             nextLevel :: State
             nextLevel = s {level = (level s) + 1, period = max 0.1 ((period s) - 0.1)}
 
             levelPass :: Bool
-            levelPass = currentTime s  >= fromIntegral (level s) * nextLevelTime
+            levelPass = level s < 10 && (currentTime s  >= fromIntegral (level s) * nextLevelTime)
 
             periodPass :: Bool
             periodPass = (currentTime s) - (previousTime s) >= (period s)
+
+            checkNextShape :: Maybe Tetrimino -> Tetrimino
+            checkNextShape Nothing  = nextShape s
+            checkNextShape (Just s) = s 
 
 updateCurrentBlock :: (Direction -> Block -> Block) -> Direction -> State -> State
 updateCurrentBlock f dir s
