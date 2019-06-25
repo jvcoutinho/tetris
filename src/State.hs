@@ -56,7 +56,8 @@ update :: Float -> State -> State
 update f state = checkIfMove (state {currentTime = f + currentTime state}) where
        
     checkIfMove :: State -> State
-    checkIfMove s 
+    checkIfMove s
+        | currentTime s  >= fromIntegral (level s) * 20    = s {level = (level s) + 1, period = max 0.1 ((period s) - 0.1)}
         | (currentTime s) - (previousTime s) >= (period s) = updateCurrentBlock translate Down (s {previousTime = currentTime s})
         | otherwise                                        = s
 
