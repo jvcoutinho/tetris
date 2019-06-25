@@ -11,4 +11,4 @@ import System.Random
 main :: IO ()
 main = do
     numberGenerator <- newStdGen
-    play FullScreen boardColor 60 (initialState numberGenerator) render handleInput update
+    playIO FullScreen boardColor 60 (initialState numberGenerator) render handleInput update

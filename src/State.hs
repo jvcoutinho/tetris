@@ -4,6 +4,8 @@ import Block
 import System.Random
 import qualified Data.Map.Strict as Map
 
+import Control.Concurrent.STM
+
 -- The board is a map of coordinates to tetriminos. If there's none, it's an empty cell.
 type Board = Map.Map Coordinate (Maybe Tetrimino)
 
@@ -12,6 +14,9 @@ data Progress = Running | GameOver | Paused deriving (Eq)
 numCellsWidth, numCellsHeight :: Int
 numCellsWidth = 10
 numCellsHeight = 28
+
+nextLevelTime :: Float
+nextLevelTime = 40.0
 
 data State = State {
     randomGenerator :: StdGen,
@@ -23,7 +28,8 @@ data State = State {
     currentTime     :: Float,
     previousTime    :: Float,
     board           :: Board,
-    progress        :: Progress
+    progress        :: Progress,
+    lvl5NextShape   :: STM (TVar Tetrimino)
 }
 
 initialState :: StdGen -> State
@@ -32,12 +38,14 @@ initialState gen = State {
     level           = 1,  -- TODO: end game and more levels
     currentBlock    = (newBlock . fst . chooseShape) gen,
     nextShape       = (fst . chooseShape) (randomize gen),
-    period          = 1.0,
+    period          = 0.5,
     score           = 0,
     currentTime     = 0.0,
     previousTime    = 0.0,
     board           = Map.fromList [ ((x, y), Nothing) | x <- [1..numCellsWidth], y <- [1..numCellsHeight+2] ],
-    progress        = Running
+    progress        = Running,
+
+    lvl5NextShape   = newTVar ((fst . chooseShape) (randomize gen))
 }
 
 randomize :: StdGen -> StdGen
@@ -52,14 +60,23 @@ moveCurrentBlock dir state = updateCurrentBlock translate dir state
 rotateCurrentBlock :: Direction -> State -> State
 rotateCurrentBlock dir state = updateCurrentBlock rotate dir state
 
-update :: Float -> State -> State
-update f state = checkIfMove (state {currentTime = f + currentTime state}) where
+update :: Float -> State -> IO State
+update f state = progression (state {currentTime = f + currentTime state}) where
        
-    checkIfMove :: State -> State
-    checkIfMove s
-        | currentTime s  >= fromIntegral (level s) * 20    = s {level = (level s) + 1, period = max 0.1 ((period s) - 0.1)}
-        | (currentTime s) - (previousTime s) >= (period s) = updateCurrentBlock translate Down (s {previousTime = currentTime s})
-        | otherwise                                        = s
+    progression :: State -> IO State
+    progression s
+        | levelPass    = if level nextLevel == 5 then return nextLevel else return nextLevel
+        | periodPass   = return (updateCurrentBlock translate Down (s {previousTime = currentTime s}))
+        | otherwise    = return s
+        where
+            nextLevel :: State
+            nextLevel = s {level = (level s) + 1, period = max 0.1 ((period s) - 0.1)}
+
+            levelPass :: Bool
+            levelPass = currentTime s  >= fromIntegral (level s) * nextLevelTime
+
+            periodPass :: Bool
+            periodPass = (currentTime s) - (previousTime s) >= (period s)
 
 updateCurrentBlock :: (Direction -> Block -> Block) -> Direction -> State -> State
 updateCurrentBlock f dir s

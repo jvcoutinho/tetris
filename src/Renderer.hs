@@ -27,8 +27,8 @@ cellColor (Just T) = dark magenta
 cellColor (Just J) = dark blue
 cellColor (Just L) = dark orange
 
-render :: State -> Picture
-render state = pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state), renderProgress (progress state)] where
+render :: State -> IO Picture
+render state = return (pictures[renderBoard (board state), renderScore (score state), renderNextShape (nextShape state), renderProgress (progress state)]) where
 
     renderBoard :: Board -> Picture
     renderBoard b = pictures[renderBorder, renderCells visibleBoard] where
