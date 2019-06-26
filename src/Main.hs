@@ -3,6 +3,7 @@ module Main where
 import Renderer
 import State
 import Event
+import Updater
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game

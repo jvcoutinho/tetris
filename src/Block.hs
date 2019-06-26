@@ -1,4 +1,4 @@
-module Block (newBlock, translate, rotate, isCoordinate, tetrimino, relativeCells, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
+module Block (newBlock, translate, rotate, hasCoordinate, tetrimino, relativeCells, coordinates, shape, Block(..), Tetrimino(..), Coordinate, Direction(..)) where
 
 import Prelude hiding (Left, Right)
 
@@ -44,8 +44,8 @@ rotate dir (Block shape (px, py) coords) = Block shape (px, py) (map (rotateCoor
     rotateCoordinates Clockwise (x, y)  = (y - py + px, -x + px + py)
     rotateCoordinates CClockwise (x, y) = (-y + py + px, x - px + py)
 
-isCoordinate :: Block -> Coordinate -> Bool
-isCoordinate (Block _ _ coords) c = elem c coords
+hasCoordinate :: Block -> Coordinate -> Bool
+hasCoordinate (Block _ _ coords) c = elem c coords
 
 tetrimino :: Int -> Tetrimino
 tetrimino 1 = I
@@ -55,3 +55,9 @@ tetrimino 4 = S
 tetrimino 5 = Z
 tetrimino 6 = J
 tetrimino 7 = L
+
+coordinates :: Block -> [Coordinate]
+coordinates (Block _ _ coords) = coords
+
+shape :: Block -> Tetrimino
+shape (Block shape _ _) = shape

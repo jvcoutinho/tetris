@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable tetris
   main-is:             Main.hs
-  other-modules: Block, Renderer, State, Event
+  other-modules: Block, Renderer, State, Event, Updater
   -- other-extensions:
   build-depends:       base >=4.11 && <4.12, gloss >=1.13, random, containers, stm
   hs-source-dirs:      src
