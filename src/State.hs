@@ -1,4 +1,4 @@
-module State (numCellsWidth, numCellsHeight, initialState, relativeCells, chooseShape, lvl7State, State(..), Tetrimino(..), Direction(..), Coordinate, Board, Progress(..)) where
+module State (numCellsWidth, numCellsHeight, initialState, chooseShape, lvl7State, State(..), Board, Progress(..)) where
 
 import Block
 import System.Random
@@ -34,7 +34,7 @@ data State = State {
 initialState :: StdGen -> State
 initialState gen = State {
     randomGenerator = (randomize . randomize) gen,
-    level           = 1,  -- TODO: end game and more levels
+    level           = 1,
     currentBlock    = (newBlock . fst . chooseShape) gen,
     nextShape       = (fst . chooseShape) (randomize gen),
     period          = 0.5,

@@ -1,6 +1,7 @@
 module Renderer where
 
 import State
+import Block hiding (translate)
 import qualified Data.Map.Strict as Map
 
 import Graphics.Gloss
