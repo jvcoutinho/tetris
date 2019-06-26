@@ -1,4 +1,4 @@
-module State (numCellsWidth, numCellsHeight, initialState, chooseShape, lvl7State, State(..), Board, Progress(..)) where
+module State (numCellsWidth, numCellsHeight, initialState, chooseShape, lvl7State, periodStart, State(..), Board, Progress(..)) where
 
 import Block
 import System.Random
@@ -15,6 +15,8 @@ data Progress = Running | GameOver | Paused deriving (Eq)
 numCellsWidth, numCellsHeight :: Int
 numCellsWidth = 10
 numCellsHeight = 28
+
+periodStart = 0.4
 
 data State = State {
     randomGenerator :: StdGen,
@@ -37,7 +39,7 @@ initialState gen = State {
     level           = 1,
     currentBlock    = (newBlock . fst . chooseShape) gen,
     nextShape       = (fst . chooseShape) (randomize gen),
-    period          = 0.5,
+    period          = periodStart,
     score           = 0,
     currentTime     = 0.0,
     previousTime    = 0.0,

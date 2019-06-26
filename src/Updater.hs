@@ -6,7 +6,10 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Control.Concurrent
 
-nextLevelTime = 5.0
+nextLevelTime  = 25.0
+minPeriod      = 0.06
+maxLevel       = 10
+periodDecrease = (periodStart - minPeriod) / fromIntegral maxLevel
 
 moveCurrentBlock :: Direction -> State -> State
 moveCurrentBlock dir state = updateCurrentBlock translate dir state
@@ -24,7 +27,7 @@ progression s
     | otherwise      = return s
 
 levelPassed :: State -> Bool
-levelPassed s = level s < 10 && (currentTime s  >= fromIntegral (level s) * nextLevelTime)
+levelPassed s = level s < maxLevel && (currentTime s  >= fromIntegral (level s) * nextLevelTime)
 
 periodPassed :: State -> Bool
 periodPassed s = (currentTime s) - (previousTime s) >= (period s)
@@ -32,7 +35,7 @@ periodPassed s = (currentTime s) - (previousTime s) >= (period s)
 -- When the player reaches level 7, a thread is spawned to randomize next shapes.
 levelUpState :: State -> IO State
 levelUpState s = do
-    let nextLevelState = s {level = (level s) + 1, period = max 0.1 ((period s) - 0.1)}
+    let nextLevelState = s {level = (level s) + 1, period = max minPeriod ((period s) - periodDecrease)}
     if level nextLevelState == 7
         then do
             shape <- lvl7NextShape s
